@@ -4,7 +4,7 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 # from tensorflow import keras
-from tensorflow.keras.layers import Dense, Input, Dropout
+from tensorflow.keras.layers import Dense, Input, Dropout, Conv1D
 from tensorflow.keras.models import load_model
 from tensorflow.keras.models import Model
 
@@ -13,7 +13,7 @@ import logging
 logging.getLogger('tensorflow').disabled = True
 
 from variables import*
-from util import get_data
+from util import mlp_data
 
 '''
 Use following command to run the script
@@ -21,7 +21,7 @@ Use following command to run the script
 
 '''
 
-class TripRecommendation(object):
+class ITSmlp(object):
     def __init__(self, locations, rssi):
         self.X = rssi
         self.Y = locations
@@ -31,12 +31,14 @@ class TripRecommendation(object):
         print("Label Shape : {}".format(self.Y.shape))
 
     def classifier(self):
-        inputs = Input(shape=(n_features,), name='inputs')
-        x = Dense(dense1, activation='relu', name='dense1')(inputs)
-        x = Dense(dense2, activation='relu', name='dense2')(x)
-        x = Dense(dense3, activation='relu', name='dense3')(x)
+        inputs = Input(shape=(n_features,))
+        x = Dense(dense1, activation='relu')(inputs)
+        x = Dense(dense2, activation='relu')(x)
+        x = Dense(dense3, activation='relu')(x)
+        x = Dense(dense3, activation='relu')(x)
+        x = Dense(dense3, activation='relu')(x)
         x = Dropout(keep_prob)(x)
-        outputs = Dense(self.num_classes, activation='softmax', name='output')(x)
+        outputs = Dense(self.num_classes, activation='softmax')(x)
         self.model = Model(inputs, outputs)
 
     def train(self):
@@ -55,10 +57,10 @@ class TripRecommendation(object):
                             )
 
     def save_model(self):
-        self.model.save(model_weights)
+        self.model.save(mlp_weights)
 
     def load_model(self):
-        loaded_model = load_model(model_weights)
+        loaded_model = load_model(mlp_weights)
         loaded_model.compile(
                         loss='sparse_categorical_crossentropy',
                         optimizer='adam',
@@ -67,16 +69,16 @@ class TripRecommendation(object):
         self.model = loaded_model
 
     def run(self):
-        if os.path.exists(model_weights):
+        if os.path.exists(mlp_weights):
             print("Model Loading !!")
-            # self.load_model()
+            self.load_model()
         else:
             print("Model Training !!")
             self.classifier()
             self.train()
-            self.save_model()
+            # self.save_model()
 
 if __name__ == "__main__":
-    locations, rssi = get_data()
-    model = TripRecommendation(locations, rssi)
+    locations, rssi = mlp_data()
+    model = ITSmlp(locations, rssi)
     model.run()
