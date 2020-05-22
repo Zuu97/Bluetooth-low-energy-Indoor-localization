@@ -4,6 +4,7 @@ from variables import*
 from sklearn.utils import shuffle
 from sklearn.preprocessing import StandardScaler, LabelEncoder, MinMaxScaler
 from sklearn.model_selection import train_test_split
+from keras import backend as K
 
 def mlp_data():
     df = pd.read_csv(data_path, index_col=None)
@@ -41,6 +42,30 @@ def ann_data():
                                             )
     return Xtrain, Ytrain, Xtest, Ytest
 
+def cnn_data():
+    df = pd.read_csv(data_path)
+    df['x'] = df['location'].str[0]
+    df['y'] = df['location'].str[1:]
+    df.drop(["location"], axis = 1, inplace = True)
+    df["x"] = df["x"].apply(fix_pos)
+    df["y"] = df["y"].astype(int)
+
+
+    Y = df.iloc[:, -2:]
+    X = df.iloc[:, 1:-2]
+
+    N = X.values.shape[0]
+    Ximg = np.zeros((N, img_width, img_height, 1,))
+    for key, value in beacon_coords.items():
+        Ximg[:, value[0], value[1], 0] -= X[key].values/200
+
+    Y = Y.values
+    Xtrain, Xtest, Ytrain, Ytest = train_test_split(
+                                            Ximg,Y,
+                                            test_size = validation_split,
+                                            shuffle = False
+                                            )
+    return Xtrain, Ytrain, Xtest, Ytest
 def eucledian_distance(p1, p2):
     x1,y1 = p1
     x2,y2 = p2
@@ -63,3 +88,6 @@ def rf_data():
                                             shuffle=True
                                             )
     return Xtrain, Ytrain, Xtest, Ytest
+
+def custom_loss(y_true, y_pred):
+        return K.sqrt(K.mean(K.square(y_pred - y_true), axis=-1))
