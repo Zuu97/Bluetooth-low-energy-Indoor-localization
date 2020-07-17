@@ -86,7 +86,7 @@ class ITSann(object):
         prob_deep = 1. * np.arange(len(sortedl2_deep))/(len(sortedl2_deep) - 1)
         fig, ax = plt.subplots()
         lg1, = ax.plot(sortedl2_deep, prob_deep, color='black')
-        plt.title('CDF of Euclidean distance error')
+        plt.title('CDF of Euclidean distance error for CNN')
         plt.xlabel('Distance (m)')
         plt.ylabel('Probability')
         plt.grid(True)
